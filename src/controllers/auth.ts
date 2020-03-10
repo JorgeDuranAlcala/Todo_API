@@ -1,5 +1,9 @@
 import User from "../models/User"
 import { Response, Request } from "express";
+import jwt from "jsonwebtoken";
+import env from "dotenv"
+import bcrypt from "bcryptjs"
+env.config()
 
 export default class Auth {
     constructor() {
@@ -13,11 +17,24 @@ export default class Auth {
 
     public async registerUser(req: Request, res: Response): Promise<Response> {
 
-            const newUser = await User.create();
+           const { username, email, password } = req.body
+
+           
+           const user = await User.findOne({email: email})
+           if(user) return res.status(404).json({ message: 'This user already exist' });
+           
+           
+           const userTo = { username, email, password};
+           
+           const newUser = new User(userTo);
+           const userSP = await newUser.save();
+           
+           const token = jwt.sign({ id: userSP.id, email: userSP.email },`${process.env.TOKEN_SECRET}`)
 
             return res.status(200).send({
                 message: 'User registered succesfully',
-                newUser
+                userSP,
+                token
             })
     }
 
@@ -28,8 +45,14 @@ export default class Auth {
      */
 
     public async loginUser(req: Request, res: Response): Promise<Response> {
+        const { email, password } = req.body;
 
-            const user = await User.findOne();
+            const user = await User.findOne({email: email});
+            if(!user) return res.status(400).json({message: "This user doesn't exist"});
+            
+              const compared = await bcrypt.compare(password, user.password);
+              console.log(compared)
+              if(!compared) return res.status(400).json({message: "Wrong password"})
 
             return res.status(200).send({
                 message: 'User logged in succesfully',
