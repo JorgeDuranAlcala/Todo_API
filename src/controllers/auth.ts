@@ -51,7 +51,7 @@ export default class Auth {
             if(!user) return res.status(400).json({message: "This user doesn't exist"});
             
               const compared = await bcrypt.compare(password, user.password);
-              console.log(compared)
+        
               if(!compared) return res.status(400).json({message: "Wrong password"})
 
             return res.status(200).send({

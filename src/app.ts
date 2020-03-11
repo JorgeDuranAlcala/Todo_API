@@ -1,7 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import bodyParser, { urlencoded } from "body-parser";
+import bodyParser from "body-parser";
+import cors from "cors"
 import router from "./routes/index.routes";
 import specialRoutes from "./routes/special.routes"
 import authRouter from "./routes/auth.routes"
@@ -22,6 +23,7 @@ export default class App {
         this.app.set('port', process.env.PORT || 8080);
         this.app.use(bodyParser.urlencoded({ extended: false }));
         this.app.use(morgan('dev'));
+        this.app.use(cors())
         this.app.use('/api', router, authRouter,specialRoutes)
         this.app.use(passport.initialize())
         passport.use(passStra)
